@@ -1,9 +1,7 @@
 import "@/styles/globals.css";
 
 import { redirect } from "next/navigation";
-import { Toaster } from "sonner";
 
-import { TRPCReactProvider } from "@/trpc/react";
 import { getServerAuthSession } from "@/server/auth";
 
 export const metadata = {
@@ -19,14 +17,5 @@ export default async function ProtectedLayout({
 }) {
   const session = await getServerAuthSession();
   if (!session?.user) return redirect("/");
-  return (
-    <html lang="en">
-      <body>
-        <TRPCReactProvider>
-          <main className="p-10">{children}</main>
-          <Toaster richColors />
-        </TRPCReactProvider>
-      </body>
-    </html>
-  );
+  return <main className="p-10">{children}</main>;
 }

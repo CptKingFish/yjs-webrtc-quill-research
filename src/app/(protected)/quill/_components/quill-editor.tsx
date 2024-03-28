@@ -1,10 +1,15 @@
 "use client";
 
-import ReactQuill from "react-quill";
 import { QuillBinding } from "y-quill";
-import * as Y from "yjs";
+import type * as Y from "yjs";
 
-import { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import dynamic from "next/dynamic";
+import type ReactQuill from "react-quill";
+
+const DynamicQuillWrapper = dynamic(() => import("./quill-wrapper"), {
+  ssr: false,
+});
 
 type EditorProps = {
   yText: Y.Text;
@@ -12,13 +17,29 @@ type EditorProps = {
 };
 
 export default function QuillEditor({ yText, provider }: EditorProps) {
+  const [isClient, setIsClient] = useState(false);
+  const [editorReady, setEditorReady] = useState(false);
   const reactQuillRef = useRef<ReactQuill>(null);
+  console.log("reactQuillRef", reactQuillRef);
+
+  useEffect(() => {
+    // This code runs only in the browser, enabling client-side rendering
+    setIsClient(true);
+  }, []);
+
+  useEffect(() => {
+    if (reactQuillRef.current) {
+      setEditorReady(true);
+    }
+  });
 
   // Set up Yjs and Quill
   useEffect(() => {
-    if (!reactQuillRef.current) {
+    if (!editorReady || !reactQuillRef.current) {
       return;
     }
+
+    console.log("reactQuillRef.current", reactQuillRef.current);
 
     const quill: ReturnType<ReactQuill["getEditor"]> =
       reactQuillRef.current.getEditor();
@@ -30,14 +51,15 @@ export default function QuillEditor({ yText, provider }: EditorProps) {
     return () => {
       binding?.destroy?.();
     };
-  }, [yText, provider]);
+  }, [yText, provider, editorReady]);
 
   return (
-    <div>
-      <div>
-        <ReactQuill
+    <>
+      {isClient && (
+        <DynamicQuillWrapper
           placeholder="Start typing here…"
-          ref={reactQuillRef}
+          // ref={reactQuillRef}
+          innerRef={reactQuillRef}
           theme="snow"
           modules={{
             toolbar: false,
@@ -47,7 +69,7 @@ export default function QuillEditor({ yText, provider }: EditorProps) {
             },
           }}
         />
-      </div>
-    </div>
+      )}
+    </>
   );
 }

@@ -18,9 +18,7 @@ export default function QuillPage() {
       //Remember the other tab or
       //other user should be in same room for seeing real-time changes
       signaling: [
-        "wss://signaling.yjs.dev",
-        "wss://y-webrtc-signaling-eu.herokuapp.com",
-        "wss://y-webrtc-signaling-us.herokuapp.com",
+        "wss://04yc9jtapd.execute-api.ap-southeast-1.amazonaws.com/dev",
       ],
     });
     setText(yText);
