@@ -6,10 +6,11 @@ import * as Y from "yjs";
 
 import { useEffect, useRef, useState } from "react";
 import { WebrtcProvider } from "y-webrtc";
+import { env } from "@/env";
 
 export default function QuillPage() {
   const [text, setText] = useState<Y.Text>();
-  const [provider, setProvider] = useState<any>();
+  const [provider, setProvider] = useState<WebrtcProvider>();
 
   useEffect(() => {
     const yDoc = new Y.Doc();
@@ -17,9 +18,7 @@ export default function QuillPage() {
     const yProvider = new WebrtcProvider("kingfish", yDoc, {
       //Remember the other tab or
       //other user should be in same room for seeing real-time changes
-      signaling: [
-        "wss://04yc9jtapd.execute-api.ap-southeast-1.amazonaws.com/dev",
-      ],
+      signaling: [env.NEXT_PUBLIC_SIGNALING_SERVER_URL],
     });
     setText(yText);
     setProvider(yProvider);

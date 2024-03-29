@@ -1,19 +1,36 @@
 "use client";
 
 import { QuillBinding } from "y-quill";
+import QuillCursors from "quill-cursors";
 import type * as Y from "yjs";
 
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { forwardRef, useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
-import type ReactQuill from "react-quill";
+import ReactQuill from "react-quill";
+import { type ReactQuillProps } from "react-quill";
+import { type WebrtcProvider } from "y-webrtc";
+import { useSession } from "next-auth/react";
+
+ReactQuill.Quill.register("modules/cursors", QuillCursors);
 
 const DynamicQuillWrapper = dynamic(() => import("./quill-wrapper"), {
   ssr: false,
 });
 
+const ForwardRefEditor = forwardRef(
+  (
+    props: ReactQuillProps & {
+      setEditorReady: React.Dispatch<React.SetStateAction<boolean>>;
+    },
+    ref: React.Ref<ReactQuill>,
+  ) => <DynamicQuillWrapper {...props} editorRef={ref} />,
+);
+
+ForwardRefEditor.displayName = "ForwardRefEditor";
+
 type EditorProps = {
   yText: Y.Text;
-  provider: any;
+  provider: WebrtcProvider;
 };
 
 export default function QuillEditor({ yText, provider }: EditorProps) {
@@ -27,19 +44,11 @@ export default function QuillEditor({ yText, provider }: EditorProps) {
     setIsClient(true);
   }, []);
 
-  useEffect(() => {
-    if (reactQuillRef.current) {
-      setEditorReady(true);
-    }
-  });
-
   // Set up Yjs and Quill
   useEffect(() => {
     if (!editorReady || !reactQuillRef.current) {
       return;
     }
-
-    console.log("reactQuillRef.current", reactQuillRef.current);
 
     const quill: ReturnType<ReactQuill["getEditor"]> =
       reactQuillRef.current.getEditor();
@@ -48,6 +57,16 @@ export default function QuillEditor({ yText, provider }: EditorProps) {
       quill,
       provider.awareness,
     );
+
+    provider.awareness.setLocalStateField("user", {
+      // Define a print name that should be displayed
+      // generate random name
+      name: "User " + Math.floor(Math.random() * 100),
+      // Define a color that should be associated to the user:
+      // generate random hex color
+      color: "#" + Math.floor(Math.random() * 16777215).toString(16),
+    });
+
     return () => {
       binding?.destroy?.();
     };
@@ -56,18 +75,19 @@ export default function QuillEditor({ yText, provider }: EditorProps) {
   return (
     <>
       {isClient && (
-        <DynamicQuillWrapper
+        <ForwardRefEditor
           placeholder="Start typing here…"
-          // ref={reactQuillRef}
-          innerRef={reactQuillRef}
+          ref={reactQuillRef}
           theme="snow"
           modules={{
-            toolbar: false,
+            cursors: true,
+            toolbar: true,
             history: {
               // Local undo shouldn't undo changes from remote users
               userOnly: true,
             },
           }}
+          setEditorReady={setEditorReady}
         />
       )}
     </>
