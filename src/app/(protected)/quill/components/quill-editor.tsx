@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { useSession } from "next-auth/react";
 import { useYDocument } from "../hooks/use-y-document";
@@ -15,7 +15,6 @@ type AwarenessStates = Map<
   }
 >;
 
-// Since QuillWrapper now handles more initialization, dynamically import it
 const QuillWrapper = dynamic(() => import("./quill-wrapper"), {
   ssr: false,
 });
@@ -23,8 +22,6 @@ const QuillWrapper = dynamic(() => import("./quill-wrapper"), {
 export default function QuillEditor() {
   const { data: session } = useSession();
   const [users, setUsers] = useState<AwarenessStates>(new Map());
-  const [editorReady, setEditorReady] = useState(false);
-  const editorRef = useRef(null);
 
   const { provider, doc } = useYDocument(
     "quill-demo-room",
@@ -51,23 +48,13 @@ export default function QuillEditor() {
 
   return (
     <div>
-      {editorReady ? <p>Editor is ready!</p> : <p>Loading editor...</p>}
       <QuillWrapper
-        ref={editorRef}
-        yText={doc?.getText("quill-demo")}
-        provider={provider}
-        setEditorReady={setEditorReady}
-        theme="snow" // Example prop; you can pass additional ReactQuill props as needed
-        modules={{
-          cursors: true,
-          toolbar: [
-            ["bold", "italic", "underline"], // Example toolbar options
-            [{ list: "ordered" }, { list: "bullet" }],
-          ],
-          history: {
-            userOnly: true,
-          },
-        }}
+        yText={doc?.getText("quill-demo-1")}
+        awareness={provider?.awareness}
+      />
+      <QuillWrapper
+        yText={doc?.getText("quill-demo-2")}
+        awareness={provider?.awareness}
       />
       <div>
         <span>Users in room:</span>
