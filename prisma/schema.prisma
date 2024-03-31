@@ -64,3 +64,22 @@ model VerificationToken {
 
     @@unique([identifier, token])
 }
+
+model Room {
+    id        String   @id @default(cuid())
+    name      String
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    inputs    Input[]
+
+    @@index([name])
+}
+
+model Input {
+    id        String   @id @default(cuid())
+    text      String?
+    room      Room     @relation(fields: [roomId], references: [id])
+    roomId    String
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}

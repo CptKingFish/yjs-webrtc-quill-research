@@ -4,7 +4,8 @@ import React, { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { useSession } from "next-auth/react";
 import { useYDocument } from "../hooks/use-y-document";
-import { Doc } from "yjs";
+import { type Doc } from "yjs";
+import { api } from "@/trpc/react";
 
 type AwarenessStates = Map<
   number,
@@ -23,18 +24,14 @@ const YjsQuillEditor = dynamic(() => import("./yjs-quill-editor"), {
 export default function YjsQuillRoom() {
   const { data: session } = useSession();
   const [users, setUsers] = useState<AwarenessStates>(new Map());
-  // const [users, setUsers] = useState<
-  //   {
-  //     id: number;
-  //     name: string;
-  //     color: string;
-  //   }[]
-  // >([]);
 
   const { provider, doc } = useYDocument(
     "quill-demo-room",
     session?.user?.name ?? "Anonymous",
   );
+
+  // const { mutate: bulkUpdateInputs } = api.quill.bulkUpdateInputs.useMutation();
+  const { mutate: updateInput } = api.quill.updateInput.useMutation();
 
   useEffect(() => {
     if (!provider) return;
@@ -46,12 +43,6 @@ export default function YjsQuillRoom() {
         awareness.getStates(),
       ) as unknown as AwarenessStates;
       console.log("neww", newUsers);
-
-      // const newUsersArr = Array.from(newUsers, ([id, { user }]) => ({
-      //   id,
-      //   name: user.name,
-      //   color: user.color,
-      // }));
 
       setUsers(newUsers);
     });
@@ -67,6 +58,14 @@ export default function YjsQuillRoom() {
       console.log("update", update, origin);
       console.log("ydoc", doc);
       console.log("ydocJSON", doc.toJSON());
+
+      const text = doc.getText("clufmxnw10001wrfu85clrruv").toJSON();
+      console.log("text", text);
+
+      updateInput({
+        inputId: "clufmxnw10001wrfu85clrruv",
+        text,
+      });
     };
 
     doc.on("update", update);
@@ -74,7 +73,7 @@ export default function YjsQuillRoom() {
     return () => {
       doc.off("update", update);
     };
-  }, [doc]);
+  }, [doc, updateInput]);
 
   // Additional logic or state related to the editor can be managed here.
   // For example, handling editor content changes, user interactions, etc.
@@ -82,11 +81,11 @@ export default function YjsQuillRoom() {
   return (
     <div>
       <YjsQuillEditor
-        yText={doc?.getText("quill-demo-1")}
+        yText={doc?.getText("clufmxnw10001wrfu85clrruv")}
         awareness={provider?.awareness}
       />
       <YjsQuillEditor
-        yText={doc?.getText("quill-demo-2")}
+        yText={doc?.getText("clufmxuh80002wrfu15eq3gu1")}
         awareness={provider?.awareness}
       />
       <div>
@@ -98,12 +97,6 @@ export default function YjsQuillRoom() {
               {clientID === provider?.awareness.clientID ? " (You)" : ""}
             </li>
           ))}
-          {/* {users.map((user) => (
-            <li key={user.id} style={{ color: user.color }}>
-              {user.name}
-              {user.id === provider?.awareness.clientID ? " (You)" : ""}
-            </li>
-          ))} */}
         </ul>
         <ul></ul>
       </div>

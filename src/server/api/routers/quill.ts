@@ -7,17 +7,34 @@ import {
 } from "@/server/api/trpc";
 
 export const quillRouter = createTRPCRouter({
-  updateYDoc: protectedProcedure
-    .input(z.object({ name: z.string().min(1) }))
+  updateInput: protectedProcedure
+    .input(z.object({ inputId: z.string(), text: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      // simulate a slow db call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const { inputId, text } = input;
 
-      return ctx.db.post.create({
-        data: {
-          name: input.name,
-          createdBy: { connect: { id: ctx.session.user.id } },
-        },
+      const updatedInput = await ctx.db.input.update({
+        where: { id: inputId },
+        data: { text },
       });
+
+      return updatedInput;
+    }),
+  bulkUpdateInputs: protectedProcedure
+    .input(
+      z.object({
+        inputs: z.array(z.object({ id: z.string(), text: z.string() })),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const updatedInputs = await Promise.all(
+        input.inputs.map(({ id, text }) =>
+          ctx.db.input.update({
+            where: { id },
+            data: { text },
+          }),
+        ),
+      );
+
+      return updatedInputs;
     }),
 });
