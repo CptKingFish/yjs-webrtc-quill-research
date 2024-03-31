@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { useSession } from "next-auth/react";
 import { useYDocument } from "../hooks/use-y-document";
+import { Doc } from "yjs";
 
 type AwarenessStates = Map<
   number,
@@ -15,13 +16,20 @@ type AwarenessStates = Map<
   }
 >;
 
-const QuillWrapper = dynamic(() => import("./quill-wrapper"), {
+const YjsQuillEditor = dynamic(() => import("./yjs-quill-editor"), {
   ssr: false,
 });
 
-export default function QuillEditor() {
+export default function YjsQuillRoom() {
   const { data: session } = useSession();
   const [users, setUsers] = useState<AwarenessStates>(new Map());
+  // const [users, setUsers] = useState<
+  //   {
+  //     id: number;
+  //     name: string;
+  //     color: string;
+  //   }[]
+  // >([]);
 
   const { provider, doc } = useYDocument(
     "quill-demo-room",
@@ -37,22 +45,47 @@ export default function QuillEditor() {
       const newUsers = new Map(
         awareness.getStates(),
       ) as unknown as AwarenessStates;
-      console.log(newUsers);
+      console.log("neww", newUsers);
+
+      // const newUsersArr = Array.from(newUsers, ([id, { user }]) => ({
+      //   id,
+      //   name: user.name,
+      //   color: user.color,
+      // }));
 
       setUsers(newUsers);
     });
   }, [provider]);
+
+  // listen for updates to doc
+
+  useEffect(() => {
+    if (!doc) return;
+
+    // on update, log out update and ydoc
+    const update = (update: Uint8Array, origin: unknown, doc: Doc) => {
+      console.log("update", update, origin);
+      console.log("ydoc", doc);
+      console.log("ydocJSON", doc.toJSON());
+    };
+
+    doc.on("update", update);
+
+    return () => {
+      doc.off("update", update);
+    };
+  }, [doc]);
 
   // Additional logic or state related to the editor can be managed here.
   // For example, handling editor content changes, user interactions, etc.
 
   return (
     <div>
-      <QuillWrapper
+      <YjsQuillEditor
         yText={doc?.getText("quill-demo-1")}
         awareness={provider?.awareness}
       />
-      <QuillWrapper
+      <YjsQuillEditor
         yText={doc?.getText("quill-demo-2")}
         awareness={provider?.awareness}
       />
@@ -65,7 +98,14 @@ export default function QuillEditor() {
               {clientID === provider?.awareness.clientID ? " (You)" : ""}
             </li>
           ))}
+          {/* {users.map((user) => (
+            <li key={user.id} style={{ color: user.color }}>
+              {user.name}
+              {user.id === provider?.awareness.clientID ? " (You)" : ""}
+            </li>
+          ))} */}
         </ul>
+        <ul></ul>
       </div>
     </div>
   );

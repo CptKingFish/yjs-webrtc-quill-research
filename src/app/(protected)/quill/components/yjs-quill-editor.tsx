@@ -10,12 +10,12 @@ import { type Awareness } from "y-protocols/awareness";
 
 ReactQuill.Quill.register("modules/cursors", QuillCursors);
 
-type QuillWrapperProps = {
+type YjsQuillEditorProps = {
   yText?: Y.Text;
   awareness?: Awareness;
 };
 
-const QuillWrapper = ({ yText, awareness }: QuillWrapperProps) => {
+const YjsQuillEditor = ({ yText, awareness }: YjsQuillEditorProps) => {
   const quillRef = React.useRef<ReactQuill>(null);
 
   useEffect(() => {
@@ -49,4 +49,4 @@ const QuillWrapper = ({ yText, awareness }: QuillWrapperProps) => {
   );
 };
 
-export default QuillWrapper;
+export default YjsQuillEditor;
