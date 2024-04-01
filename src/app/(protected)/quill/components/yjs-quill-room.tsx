@@ -61,11 +61,6 @@ export default function YjsQuillRoom() {
 
       const text = doc.getText("clufmxnw10001wrfu85clrruv").toJSON();
       console.log("text", text);
-
-      updateInput({
-        inputId: "clufmxnw10001wrfu85clrruv",
-        text,
-      });
     };
 
     doc.on("update", update);
