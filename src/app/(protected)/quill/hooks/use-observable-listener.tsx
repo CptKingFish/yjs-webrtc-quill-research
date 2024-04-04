@@ -1,13 +1,12 @@
 import { useEffect, useRef } from "react";
 
 type Handler = (arg: string) => void;
-
 interface Observable {
   on: (name: string, fn: Handler) => void;
   off: (name: string, fn: Handler) => void;
 }
 
-function useEventListener(
+function useObservableListener(
   eventName: string,
   handler: Handler,
   observable: Observable,
@@ -30,4 +29,4 @@ function useEventListener(
   );
 }
 
-export default useEventListener;
+export default useObservableListener;

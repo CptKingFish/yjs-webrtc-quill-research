@@ -22,11 +22,12 @@ export const useYDocument = (roomName: string, username: string) => {
         .padStart(6, "0")}`,
     });
 
+    console.log("yProvider", yProvider);
+
     setDoc(yDoc);
     setProvider(yProvider);
 
     return () => {
-      yProvider.disconnect();
       yDoc.destroy();
       yProvider.destroy();
     };
