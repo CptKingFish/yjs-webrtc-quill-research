@@ -3,7 +3,11 @@ import * as Y from "yjs";
 import { WebrtcProvider } from "y-webrtc";
 import { env } from "@/env";
 
-export const useYDocument = (roomName: string, username: string) => {
+export const useYDocument = (
+  roomName: string,
+  username: string,
+  initialState?: Uint8Array,
+) => {
   const [doc, setDoc] = useState<Y.Doc | undefined>(undefined);
   const [provider, setProvider] = useState<WebrtcProvider | undefined>(
     undefined,
@@ -11,6 +15,9 @@ export const useYDocument = (roomName: string, username: string) => {
 
   useEffect(() => {
     const yDoc = new Y.Doc();
+    if (initialState) {
+      Y.applyUpdate(yDoc, initialState);
+    }
     const yProvider = new WebrtcProvider(roomName, yDoc, {
       signaling: [env.NEXT_PUBLIC_SIGNALING_SERVER_URL],
     });
@@ -22,15 +29,15 @@ export const useYDocument = (roomName: string, username: string) => {
         .padStart(6, "0")}`,
     });
 
-    console.log("yProvider", yProvider);
-
     setDoc(yDoc);
     setProvider(yProvider);
 
     return () => {
+      yProvider.disconnect();
       yDoc.destroy();
       yProvider.destroy();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [roomName, username]);
 
   return { provider, doc };

@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 import { type inferRouterOutputs } from "@trpc/server";
 import { type quillRouter } from "@/server/api/routers/quill";
 import { type WebrtcProvider } from "y-webrtc";
-import { Delta } from "quill";
+import { type Delta } from "quill";
 
 const YjsQuillEditor = dynamic(() => import("./yjs-quill-editor"), {
   ssr: false,

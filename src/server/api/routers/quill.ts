@@ -46,4 +46,42 @@ export const quillRouter = createTRPCRouter({
 
       return inputs;
     }),
+  getYDocumentByRoomId: protectedProcedure
+    .input(z.object({ roomId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const yDocumentRaw = await ctx.db.yDocument.findFirst({
+        where: { roomId: input.roomId },
+      });
+
+      const yDocument = {
+        ...yDocumentRaw,
+        state: yDocumentRaw?.state?.toString("base64"),
+      };
+
+      return yDocument;
+    }),
+  updateYDocumentState: protectedProcedure
+    .input(
+      z.object({
+        yDocumentId: z.string(),
+        // Expect a base64 encoded string instead of a Uint8Array
+        // state: z.string(),
+        state: z.instanceof(Uint8Array),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { yDocumentId, state } = input;
+
+      // Decode the base64 string to a Buffer before saving it
+      // const buffer = Buffer.from(state, "base64");
+
+      const updatedYDocumentState = await ctx.db.yDocument.update({
+        where: { id: yDocumentId },
+        data: { state: Buffer.from(state) },
+      });
+
+      return true;
+
+      // return updatedYDocumentState;
+    }),
 });

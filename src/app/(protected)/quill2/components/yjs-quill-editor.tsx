@@ -7,15 +7,23 @@ import "react-quill/dist/quill.snow.css";
 import { QuillBinding } from "y-quill";
 import type * as Y from "yjs";
 import { type Awareness } from "y-protocols/awareness";
+import { type Delta } from "quill";
 
 ReactQuill.Quill.register("modules/cursors", QuillCursors);
 
 type YjsQuillEditorProps = {
-  yText?: Y.Text;
-  awareness?: Awareness;
+  yText: Y.Text;
+  awareness: Awareness;
+  initialDelta: Delta;
+  userCount: number;
 };
 
-const YjsQuillEditor = ({ yText, awareness }: YjsQuillEditorProps) => {
+const YjsQuillEditor = ({
+  yText,
+  awareness,
+  initialDelta,
+  userCount,
+}: YjsQuillEditorProps) => {
   const quillRef = React.useRef<ReactQuill>(null);
 
   useEffect(() => {
@@ -27,9 +35,19 @@ const YjsQuillEditor = ({ yText, awareness }: YjsQuillEditorProps) => {
 
     const binding = new QuillBinding(yText, quill, awareness);
 
-    // Cleanup
-    return () => binding.destroy();
-  }, [yText, awareness]);
+    // const fetchFallback = () => {
+    //   if (userCount < 2) {
+    //     quill.setContents(initialDelta);
+    //   }
+    // };
+
+    // const timeoutId = window.setTimeout(fetchFallback, 1000);
+
+    return () => {
+      binding.destroy();
+      // window.clearTimeout(timeoutId);
+    };
+  }, [yText, awareness, userCount, initialDelta]);
 
   return (
     <ReactQuill
