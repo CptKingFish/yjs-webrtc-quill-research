@@ -23,46 +23,25 @@ type AwarenessStates = Map<
 >;
 
 type YjsQuillRoomProps = {
-  inputsList: inferRouterOutputs<typeof quillRouter>["getInputsByRoomId"];
-  initialDocument: inferRouterOutputs<
-    typeof quillRouter
-  >["getYDocumentByRoomId"];
+  roomDetails: inferRouterOutputs<typeof quillRouter>["getRoomDetailsByRoomId"];
 };
 
-export default function YjsQuillRoom({
-  inputsList,
-  initialDocument,
-}: YjsQuillRoomProps) {
+export default function YjsQuillRoom({ roomDetails }: YjsQuillRoomProps) {
   const { data: session } = useSession();
   const [users, setUsers] = useState<AwarenessStates>(new Map());
-  // const { data: initialDocument, isLoading: initialDocumentLoading } =
-  //   api.quill.getYDocumentByRoomId.useQuery({
-  //     roomId: "clufmx2ik0000wrfug653vlml",
-  //   });
+
   const { mutate: updateYDocumentState, error } =
     api.quill.updateYDocumentState.useMutation();
 
   const { provider, doc } = useYDocument(
-    "quill-demo-room",
+    roomDetails.id!,
     session?.user?.name ?? "Anonymous",
-    initialDocument?.state
-      ? Uint8Array.from(atob(initialDocument.state), (c) => c.charCodeAt(0))
+    roomDetails.ydocument.state
+      ? Uint8Array.from(atob(roomDetails.ydocument.state), (c) =>
+          c.charCodeAt(0),
+        )
       : undefined,
   );
-
-  // set the initial document state
-  // useEffect(() => {
-  //   if (!initialDocument?.state) return;
-
-  //   const state = Uint8Array.from(atob(initialDocument.state), (c) =>
-  //     c.charCodeAt(0),
-  //   );
-
-  //   if (state && doc && !initialDocumentLoading) {
-  //     console.log("initial state", state);
-  //     Y.applyUpdate(doc, state);
-  //   }
-  // }, [doc, initialDocument, initialDocumentLoading]);
 
   useEffect(() => {
     if (!provider) return;
@@ -84,10 +63,8 @@ export default function YjsQuillRoom({
     async (state: Uint8Array) => {
       console.log("debounced update", state);
       if (!doc || !state) return;
-      // state is expecting base 64 encoded string
       updateYDocumentState({
-        yDocumentId: "cluo879o40000wh342lxrt4vc",
-        // state: Buffer.from(state).toString("base64"),
+        yDocumentId: roomDetails.ydocument.id!,
         state,
       });
     },
@@ -106,14 +83,10 @@ export default function YjsQuillRoom({
       doc: Doc,
       transaction: Transaction,
     ) => {
-      // console.log("update", update);
-      // console.log("origin", origin);
-      console.log("ydoc", doc);
-      doc.share.forEach((value, key) => {
+      doc.share.forEach((_, key) => {
         console.log(doc.getText(key).toDelta());
       });
-      // console.log("ydocJSON", doc.toJSON());
-      // console.log("transaction", transaction);
+
       void debouncedYDocUpdate(Y.encodeStateAsUpdate(doc));
     };
 
@@ -128,10 +101,8 @@ export default function YjsQuillRoom({
     <div>
       {provider && (
         <YjsQuillEditorList
-          inputsList={inputsList}
+          inputsList={roomDetails.inputs}
           provider={provider}
-          users={users}
-          // peers={clientCount}
         />
       )}
       <div>

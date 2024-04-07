@@ -6,8 +6,14 @@ import {
   protectedProcedure,
   publicProcedure,
 } from "@/server/api/trpc";
+import { create } from "domain";
 
 export const quillRouter = createTRPCRouter({
+  getRooms: publicProcedure.query(async ({ ctx }) => {
+    const rooms = await ctx.db.room.findMany();
+
+    return rooms;
+  }),
   getInputsByRoomId: protectedProcedure
     .input(z.object({ roomId: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -64,5 +70,49 @@ export const quillRouter = createTRPCRouter({
       ]);
 
       return true;
+    }),
+  getRoomDetailsByRoomId: protectedProcedure
+    .input(z.object({ roomId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const roomDetailsRaw = await ctx.db.room.findFirst({
+        where: { id: input.roomId },
+        include: {
+          inputs: {
+            select: { id: true },
+          },
+          ydocument: {
+            select: { id: true, state: true },
+          },
+        },
+      });
+
+      const roomDetails = {
+        ...roomDetailsRaw,
+        ydocument: {
+          ...roomDetailsRaw?.ydocument,
+          state: roomDetailsRaw?.ydocument?.state?.toString("base64"),
+        },
+      };
+
+      return roomDetails;
+    }),
+  createRoom: protectedProcedure
+    .input(z.object({ name: z.string(), numOfInputs: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      const room = await ctx.db.room.create({
+        data: {
+          name: input.name,
+          inputs: {
+            createMany: {
+              data: Array.from({ length: input.numOfInputs }).map(() => ({})),
+            },
+          },
+          ydocument: {
+            create: {},
+          },
+        },
+      });
+
+      return room;
     }),
 });

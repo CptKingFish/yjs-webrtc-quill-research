@@ -18,6 +18,7 @@ export const useYDocument = (
     if (initialState) {
       Y.applyUpdate(yDoc, initialState);
     }
+
     const yProvider = new WebrtcProvider(roomName, yDoc, {
       signaling: [env.NEXT_PUBLIC_SIGNALING_SERVER_URL],
     });
