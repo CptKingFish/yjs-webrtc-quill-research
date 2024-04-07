@@ -1,6 +1,7 @@
 import React from "react";
 import dynamic from "next/dynamic";
 import { api } from "@/trpc/server";
+import RoomsList from "./components/rooms-list";
 
 // Dynamically import QuillEditor as a client component
 const YjsQuillRoom = dynamic(() => import("./components/yjs-quill-room"), {
@@ -17,9 +18,14 @@ export default async function QuillPage() {
   });
 
   return (
-    <div>
-      <h1>Collaborative Editing</h1>
-      <YjsQuillRoom inputsList={inputsList} initialDocument={yDocument} />
+    <div className="flex">
+      <div className="w-64">
+        <RoomsList />
+      </div>
+      <div className="flex-auto">
+        <h1>Room name: </h1>
+        <YjsQuillRoom inputsList={inputsList} initialDocument={yDocument} />
+      </div>
     </div>
   );
 }
