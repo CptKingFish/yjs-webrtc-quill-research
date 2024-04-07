@@ -35,17 +35,17 @@ const YjsQuillEditor = ({
 
     const binding = new QuillBinding(yText, quill, awareness);
 
-    const fetchFallback = () => {
-      if (userCount < 2) {
-        quill.setContents(initialDelta);
-      }
-    };
+    // const fetchFallback = () => {
+    //   if (userCount < 2) {
+    //     quill.setContents(initialDelta);
+    //   }
+    // };
 
-    const timeoutId = window.setTimeout(fetchFallback, 1000);
+    // const timeoutId = window.setTimeout(fetchFallback, 1000);
 
     return () => {
       binding.destroy();
-      window.clearTimeout(timeoutId);
+      // window.clearTimeout(timeoutId);
     };
   }, [yText, awareness, userCount, initialDelta]);
 

@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 
 type Handler = (arg: string) => void;
+
 interface Observable {
   on: (name: string, fn: Handler) => void;
   off: (name: string, fn: Handler) => void;
