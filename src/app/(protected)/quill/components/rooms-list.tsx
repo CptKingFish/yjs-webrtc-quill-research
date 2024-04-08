@@ -1,9 +1,9 @@
 "use client";
 
-import { type quillRouter } from "@/server/api/routers/quill";
 import { type inferRouterOutputs } from "@trpc/server";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
+import type quillRouter from "@/server/api/routers/quill";
 import { api } from "@/trpc/react";
 
 function classNames(...classes: string[]) {
@@ -14,7 +14,7 @@ type RoomsListProps = {
   roomsList: inferRouterOutputs<typeof quillRouter>["getRooms"];
 };
 
-export default function RoomsList({ roomsList }: RoomsListProps) {
+const RoomsList = ({ roomsList }: RoomsListProps) => {
   const router = useRouter();
   const pathname = usePathname();
   const { mutateAsync: createRoom } = api.quill.createRoom.useMutation();
@@ -36,12 +36,9 @@ export default function RoomsList({ roomsList }: RoomsListProps) {
   return (
     <nav className="mr-3 flex flex-1 flex-col" aria-label="Sidebar">
       <div className="mb-4">
-        <label
-          htmlFor="room-name"
-          className="block text-sm font-medium leading-6 text-gray-900"
-        >
+        <span className="block text-sm font-medium leading-6 text-gray-900">
           Enter name and no. of inputs
-        </label>
+        </span>
         <div className="relative mt-2 rounded-md shadow-sm">
           <input
             type="text"
@@ -58,9 +55,7 @@ export default function RoomsList({ roomsList }: RoomsListProps) {
             }
           />
           <div className="absolute inset-y-0 right-0 flex items-center">
-            <label htmlFor="inputs" className="sr-only">
-              Number of inputs
-            </label>
+            <span className="sr-only">Number of inputs</span>
             <select
               id="inputs"
               name="inputs"
@@ -69,7 +64,7 @@ export default function RoomsList({ roomsList }: RoomsListProps) {
               onChange={(e) =>
                 setCreateRoomFormData({
                   ...createRoomFormData,
-                  inputs: parseInt(e.target.value),
+                  inputs: parseInt(e.target.value, 10),
                 })
               }
             >
@@ -89,7 +84,7 @@ export default function RoomsList({ roomsList }: RoomsListProps) {
           Create Room
         </button>
       </div>
-      <ul role="list" className="-mx-2 space-y-1">
+      <ul className="-mx-2 space-y-1">
         {roomsList.map((room) => (
           <li key={room.id}>
             <a
@@ -108,4 +103,6 @@ export default function RoomsList({ roomsList }: RoomsListProps) {
       </ul>
     </nav>
   );
-}
+};
+
+export default RoomsList;

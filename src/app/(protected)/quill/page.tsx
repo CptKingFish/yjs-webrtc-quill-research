@@ -1,3 +1,5 @@
-export default async function QuillPage() {
-  return <div className="flex"></div>;
-}
+const QuillPage = () => {
+  return <div className="flex" />;
+};
+
+export default QuillPage;

@@ -9,11 +9,7 @@ export const metadata = {
   icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
 
-export default async function QuillLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+const QuillLayout = async ({ children }: { children: React.ReactNode }) => {
   const roomsList = await api.quill.getRooms();
   return (
     <div className="flex">
@@ -23,4 +19,6 @@ export default async function QuillLayout({
       <div className="flex-auto">{children}</div>
     </div>
   );
-}
+};
+
+export default QuillLayout;

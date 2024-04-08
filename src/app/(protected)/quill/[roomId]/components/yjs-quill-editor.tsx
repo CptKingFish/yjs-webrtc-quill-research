@@ -27,6 +27,7 @@ const YjsQuillEditor = ({ yText, awareness }: YjsQuillEditorProps) => {
 
     const binding = new QuillBinding(yText, quill, awareness);
 
+    // eslint-disable-next-line consistent-return
     return () => {
       binding.destroy();
     };

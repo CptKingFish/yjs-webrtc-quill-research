@@ -3,7 +3,7 @@ import * as Y from "yjs";
 import { WebrtcProvider } from "y-webrtc";
 import { env } from "@/env";
 
-export const useYDocument = (
+const useYDocument = (
   roomName: string,
   username: string,
   initialState?: Uint8Array,
@@ -43,3 +43,5 @@ export const useYDocument = (
 
   return { provider, doc };
 };
+
+export default useYDocument;

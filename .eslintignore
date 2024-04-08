@@ -1,0 +1,6 @@
+src/app/components/ui/*.tsx
+src/trpc/*.ts
+src/trpc/*.tsx
+src/env.js
+src/lib/utils.ts
+src/server/db.ts

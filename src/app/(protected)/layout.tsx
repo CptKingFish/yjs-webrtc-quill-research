@@ -10,12 +10,10 @@ export const metadata = {
   icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
 
-export default async function ProtectedLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+const ProtectedLayout = async ({ children }: { children: React.ReactNode }) => {
   const session = await getServerAuthSession();
   if (!session?.user) return redirect("/");
   return <main className="p-10">{children}</main>;
-}
+};
+
+export default ProtectedLayout;

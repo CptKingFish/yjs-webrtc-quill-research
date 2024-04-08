@@ -2,15 +2,15 @@
 
 import React, { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { useYDocument } from "../hooks/use-y-document";
 import { type Transaction, type Doc } from "yjs";
 import { useDebouncedCallback } from "use-debounce";
 import { type QuillBinding } from "y-quill";
 import { type inferRouterOutputs } from "@trpc/server";
-import { type quillRouter } from "@/server/api/routers/quill";
+import * as Y from "yjs";
+import type quillRouter from "@/server/api/routers/quill";
 import YjsQuillEditorList from "./yjs-quill-editor-list";
 import { api } from "@/trpc/react";
-import * as Y from "yjs";
+import useYDocument from "../hooks/use-y-document";
 
 type AwarenessStates = Map<
   number,
@@ -26,11 +26,11 @@ type YjsQuillRoomProps = {
   roomDetails: inferRouterOutputs<typeof quillRouter>["getRoomDetailsByRoomId"];
 };
 
-export default function YjsQuillRoom({ roomDetails }: YjsQuillRoomProps) {
+const YjsQuillRoom = ({ roomDetails }: YjsQuillRoomProps) => {
   const { data: session } = useSession();
   const [users, setUsers] = useState<AwarenessStates>(new Map());
 
-  const { mutate: updateYDocumentState, error } =
+  const { mutate: updateYDocumentState } =
     api.quill.updateYDocumentState.useMutation();
 
   const { provider, doc } = useYDocument(
@@ -46,7 +46,7 @@ export default function YjsQuillRoom({ roomDetails }: YjsQuillRoomProps) {
   useEffect(() => {
     if (!provider) return;
 
-    const awareness = provider.awareness;
+    const { awareness } = provider;
 
     awareness.on("change", () => {
       const newUsers = new Map(
@@ -78,25 +78,42 @@ export default function YjsQuillRoom({ roomDetails }: YjsQuillRoomProps) {
 
     // on update, log out update and ydoc
     const update = (
-      update: Uint8Array,
+      updateData: Uint8Array,
       origin: QuillBinding,
-      doc: Doc,
+      updatedDoc: Doc,
       transaction: Transaction,
     ) => {
-      doc.share.forEach((_, key) => {
-        console.log(doc.getText(key).toDelta());
+      updatedDoc.share.forEach((_, key) => {
+        console.log(updatedDoc.getText(key).toDelta());
       });
 
-      void debouncedYDocUpdate(Y.encodeStateAsUpdate(doc));
+      void debouncedYDocUpdate(Y.encodeStateAsUpdate(updatedDoc));
     };
 
     doc.on("update", update);
 
+    // eslint-disable-next-line consistent-return
     return () => {
       doc.off("update", update);
     };
   }, [debouncedYDocUpdate, doc]);
 
+  useEffect(() => {
+    function beforeUnload(e: BeforeUnloadEvent) {
+      e.preventDefault();
+      if (!doc) return;
+      updateYDocumentState({
+        yDocumentId: roomDetails.ydocument.id!,
+        state: Y.encodeStateAsUpdate(doc),
+      });
+    }
+
+    window.addEventListener("beforeunload", beforeUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", beforeUnload);
+    };
+  }, [doc, roomDetails.ydocument.id, updateYDocumentState]);
   return (
     <div>
       {provider && (
@@ -115,8 +132,10 @@ export default function YjsQuillRoom({ roomDetails }: YjsQuillRoomProps) {
             </li>
           ))}
         </ul>
-        <ul></ul>
+        <ul />
       </div>
     </div>
   );
-}
+};
+
+export default YjsQuillRoom;

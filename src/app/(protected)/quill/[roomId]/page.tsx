@@ -13,7 +13,7 @@ type QuillRoomPageProps = {
   };
 };
 
-export default async function QuillRoomPage({ params }: QuillRoomPageProps) {
+const QuillRoomPage = async ({ params }: QuillRoomPageProps) => {
   const roomDetails = await api.quill.getRoomDetailsByRoomId({
     roomId: params.roomId,
   });
@@ -29,4 +29,6 @@ export default async function QuillRoomPage({ params }: QuillRoomPageProps) {
       <YjsQuillRoom roomDetails={roomDetails} />
     </div>
   );
-}
+};
+
+export default QuillRoomPage;
